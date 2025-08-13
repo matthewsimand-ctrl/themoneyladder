@@ -1020,6 +1020,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $id = id => document.getElementById(id);
   
+  // GOOGLE SHEETS CONFIGURATION
+  const GOOGLE_SHEETS_CONFIG = {
+    SHEET_ID: '14WEY_RB0cnDbszhBVKGZIVGV_m0ZQ8fhsOzi5U523ZI',
+    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY',
+    RANGE: 'GameData!A:C'
+  };
+  
   // Option 2: Google Apps Script Web App (easier setup)
   const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
 
@@ -1051,14 +1058,17 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Try Apps Script first (easier), then fall back to direct API
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+        console.log('Trying Apps Script URL:', APPS_SCRIPT_URL);
         const response = await fetch(APPS_SCRIPT_URL);
         data = await response.json();
       } else if (GOOGLE_SHEETS_CONFIG.API_KEY !== 'YOUR_GOOGLE_SHEETS_API_KEY') {
+        console.log('Trying direct API');
         const { SHEET_ID, API_KEY, RANGE } = GOOGLE_SHEETS_CONFIG;
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
         const response = await fetch(url);
         data = await response.json();
       } else {
+        console.log('No valid configuration - using defaults');
         throw new Error('No valid configuration found');
       }
       
