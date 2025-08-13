@@ -1021,12 +1021,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const $id = id => document.getElementById(id);
 
   // GOOGLE SHEETS CONFIGURATION
-  // Replace these with your actual Google Sheets details:
+  // Option 1: Direct API (requires API key)
   const GOOGLE_SHEETS_CONFIG = {
-    SHEET_ID: 'YOUR_GOOGLE_SHEET_ID', // Found in your Google Sheets URL
-    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY', // From Google Cloud Console
-    RANGE: 'GameData!A:F' // Sheet name and range (adjust as needed)
+    SHEET_ID: 'YOUR_GOOGLE_SHEET_ID',
+    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY',
+    RANGE: 'GameData!A:C'
   };
+  
+  // Option 2: Google Apps Script Web App (easier setup)
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH4t4AWfdW16fjNqSGUvO5lQNKUBDPhhDOY5CZwz2haOdDkjvgDJ5FWeGg12hgC-E_/exec';
 
   // Game configuration - can be updated externally
   let gameConfig = {
@@ -1052,11 +1055,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load config from Google Sheets
   window.loadGameConfig = async function() {
     try {
-      const { SHEET_ID, API_KEY, RANGE } = GOOGLE_SHEETS_CONFIG;
+      let data;
       
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-      const response = await fetch(url);
-      const data = await response.json();
+      // Try Apps Script first (easier), then fall back to direct API
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+        const response = await fetch(APPS_SCRIPT_URL);
+        data = await response.json();
+      } else if (GOOGLE_SHEETS_CONFIG.API_KEY !== 'YOUR_GOOGLE_SHEETS_API_KEY') {
+        const { SHEET_ID, API_KEY, RANGE } = GOOGLE_SHEETS_CONFIG;
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+        const response = await fetch(url);
+        data = await response.json();
+      } else {
+        throw new Error('No valid configuration found');
+      }
       
       if (data.values && data.values.length > 1) {
         const rows = data.values.slice(1); // Skip header row
@@ -1072,7 +1084,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const wordData = { word: row[0].toUpperCase() };
             if (row[1]) wordData.hint = row[1];
             if (row[2]) {
-              // Parse diamond indices (comma-separated numbers)
               const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
               if (indices.length > 0) wordData.diamondIndex = indices;
             }
@@ -1088,10 +1099,10 @@ document.addEventListener('DOMContentLoaded', () => {
           gameConfig.finalHint = newFinalHint;
         }
         
-        console.log('Game config loaded from Google Sheets');
+        console.log('Game config loaded successfully');
       }
     } catch (error) {
-      console.log('Using default config - Google Sheets load failed:', error);
+      console.log('Using default config - External load failed:', error);
     }
   };
   
