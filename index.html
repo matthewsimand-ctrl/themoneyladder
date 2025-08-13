@@ -1079,12 +1079,13 @@ document.addEventListener('DOMContentLoaded', () => {
           } else if (row[0] && row[0] !== 'FINAL') {
             const wordData = { word: row[0].toUpperCase() };
             if (row[1]) wordData.hint = row[1];
-            if (row[2]) {
+            if (row[2] && row[2] !== '') {
               if (typeof row[2] === 'string' && row[2].includes(',')) {
                 const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
                 if (indices.length > 0) wordData.diamondIndex = indices;
-              } else if (!isNaN(parseInt(row[2]))) {
-                wordData.diamondIndex = [parseInt(row[2])];
+              } else {
+                const index = parseInt(row[2]);
+                if (!isNaN(index)) wordData.diamondIndex = [index];
               }
             }
             newLadderData.push(wordData);
@@ -2273,6 +2274,12 @@ function stopInfoDemo() {
   }
 
   function startGame(){
+    if (!configLoaded) {
+      console.log('Config not loaded yet, waiting...');
+      setTimeout(() => startGame(), 100);
+      return;
+    }
+    
     if (hero) hero.style.display='none';
     if (hud) hud.style.display='flex';
     if (gamePanel) gamePanel.style.display='block';
@@ -2408,11 +2415,13 @@ function stopInfoDemo() {
   createFloatingParticles();
   
   // Load config from Google Sheets on startup
+  let configLoaded = false;
   window.loadGameConfig().then(() => {
     // Update variables after config load
     ladderData = gameConfig.ladderData;
     manualFinalWord = gameConfig.finalWord;
     manualFinalHint = gameConfig.finalHint;
+    configLoaded = true;
     console.log('Config updated:', { ladderData: ladderData.length, finalWord: manualFinalWord });
     resetToStartScreen();
   });
