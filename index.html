@@ -1098,10 +1098,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   
-  // Use config values
-  const ladderData = gameConfig.ladderData;
-  const manualFinalWord = gameConfig.finalWord;
-  const manualFinalHint = gameConfig.finalHint;
+  // Use config values - will be updated after loading
+  let ladderData = gameConfig.ladderData;
+  let manualFinalWord = gameConfig.finalWord;
+  let manualFinalHint = gameConfig.finalHint;
 
   let clockInterval = null;
   let timeLeft = 90;
@@ -2399,9 +2399,10 @@ function stopInfoDemo() {
   // Load config from Google Sheets on startup
   window.loadGameConfig().then(() => {
     // Update variables after config load
-    const ladderData = gameConfig.ladderData;
-    const manualFinalWord = gameConfig.finalWord;
-    const manualFinalHint = gameConfig.finalHint;
+    ladderData = gameConfig.ladderData;
+    manualFinalWord = gameConfig.finalWord;
+    manualFinalHint = gameConfig.finalHint;
+    console.log('Config updated:', { ladderData: ladderData.length, finalWord: manualFinalWord });
     resetToStartScreen();
   });
   
