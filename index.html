@@ -1079,21 +1079,27 @@ document.addEventListener('DOMContentLoaded', () => {
           } else if (row[0] && row[0] !== 'FINAL') {
             const wordData = { word: row[0].toUpperCase() };
             if (row[1]) wordData.hint = row[1];
-            if (row[2] && row[2] !== '') {
-              if (typeof row[2] === 'string' && row[2].includes(',')) {
-                const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
-                if (indices.length > 0) wordData.diamondIndex = indices;
-              } else {
-                const index = parseInt(row[2]);
-                if (!isNaN(index)) wordData.diamondIndex = [index];
+            if (row[2] && row[2] !== '' && row[2] !== null && row[2] !== undefined) {
+              const cellValue = String(row[2]).trim();
+              if (cellValue && cellValue !== '') {
+                if (cellValue.includes(',')) {
+                  const indices = cellValue.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
+                  if (indices.length > 0) wordData.diamondIndex = indices;
+                } else {
+                  const index = parseInt(cellValue);
+                  if (!isNaN(index)) wordData.diamondIndex = [index];
+                }
               }
             }
             newLadderData.push(wordData);
           }
         });
         
-        console.log('Parsed data:', { newLadderData, newFinalWord, newFinalHint });
-        console.log('About to update gameConfig with:', newLadderData.length, 'words');
+        console.log('Parsed data:', { 
+          newLadderData: newLadderData.map(w => ({ word: w.word, hint: w.hint, diamondIndex: w.diamondIndex })), 
+          newFinalWord, 
+          newFinalHint 
+        });
         
         if (newLadderData.length > 0) {
           gameConfig.ladderData = newLadderData;
@@ -2276,7 +2282,7 @@ function stopInfoDemo() {
   function startGame(){
     if (!configLoaded) {
       console.log('Config not loaded yet, waiting...');
-      setTimeout(() => startGame(), 100);
+      setTimeout(() => startGame(), 50);
       return;
     }
     
