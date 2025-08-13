@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://script.google.com" />
+  <link rel="dns-prefetch" href="https://script.google.com" />
   <title>💎 The Money Ladder — Climb • Collect • Conquer! 🪜</title>
   <style>
     :root{
@@ -852,19 +854,21 @@
         
         <div class="mode-cta">
           <button id="timerModeBtn" class="btn primary" type="button">
-            ⚡ Timed Challenge
-            <small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">90 seconds of pure adrenaline</small>
+            <span class="btn-content">⚡ Timed Challenge
+            <small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">90 seconds of pure adrenaline</small></span>
+            <span class="btn-loading" style="display:none"><div class="loading"></div> Loading...</span>
           </button>
           <button id="normalModeBtn" class="btn secondary" type="button">
-            🎯 Precision Mode
-            <small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">Take your time, but watch your guesses</small>
+            <span class="btn-content">🎯 Precision Mode
+            <small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">Take your time, but watch your guesses</small></span>
+            <span class="btn-loading" style="display:none"><div class="loading"></div> Loading...</span>
           </button>
           <button id="leaderboardBtn" class="btn minor" type="button">🏆 Hall of Fame</button>
         </div>
 
         <div class="stats-grid">
           <div class="stat-item">
-            <span class="stat-number">6</span>
+            <span id="wordsToClimbCount" class="stat-number"><div class="loading"></div></span>
             <div class="stat-label">Words to Climb</div>
           </div>
           <div class="stat-item">
@@ -1016,21 +1020,27 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $id = id => document.getElementById(id);
   
-  // GOOGLE SHEETS CONFIGURATION
-  const GOOGLE_SHEETS_CONFIG = {
-    SHEET_ID: '14WEY_RB0cnDbszhBVKGZIVGV_m0ZQ8fhsOzi5U523ZI',
-    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY',
-    RANGE: 'GameData!A:C'
-  };
-  
-  // Option 2: Google Apps Script Web App (easier setup)
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH4t4AWfdW16fjNqSGUvO5lQNKUBDPhhDOY5CZwz2haOdDkjvgDJ5FWeGg12hgC-E_/exec'
+  const _0x1a2b = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5SDR0NEFXZmRXMTZmalNHVXZPNWxRTktCRFBoRE9ZNUNad3oyaGFPZERranZnREo1RldlR2cxMmhnQy1FXy9leGVj';
+  const _0x3c4d = atob(_0x1a2b);
 
-  // Game configuration - loaded from Google Sheets
+  // Game configuration - loaded from Google Sheets with fallback
   let gameConfig = {
-    ladderData: [],
-    finalWord: '',
-    finalHint: 'Hint: A secret word awaits…'
+    ladderData: [
+      { word: 'MONEY', diamondIndex: [0] },
+      { word: 'HONEY', hint: 'rhyme', diamondIndex: [3] },
+      { word: 'BEAR', hint: 'animal that loves the word above' },
+      { word: 'BEER', hint: 'one-letter change: cheers!', diamondIndex: [0] },
+      { word: 'BELLY', hint: 'chain reaction' },
+      { word: 'DANCE', hint: 'chain reaction', diamondIndex: [0] },
+      { word: 'PARTY', hint: 'chain reaction' },
+      { word: 'POOPER', hint: 'chain reaction', diamondIndex: [1] },
+      { word: 'PROPER', hint: 'one-letter change: in good form', diamondIndex: [2] },
+      { word: 'PROPEL', hint: 'one-letter change: push' },
+      { word: 'ROPE', hint: 'consisting of: climber\'s aid' },
+      { word: 'BURN', hint: 'chain reaction', diamondIndex: [2] }
+    ],
+    finalWord: 'BEDROOM',
+    finalHint: 'Hint: The perfect place for rest!'
   };
   
   // Expose function to update game config
@@ -1044,9 +1054,8 @@ document.addEventListener('DOMContentLoaded', () => {
       let data;
       
       // Use Apps Script URL
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
-        console.log('Trying Apps Script URL:', APPS_SCRIPT_URL);
-        const response = await fetch(APPS_SCRIPT_URL, {
+      if (_0x3c4d) {
+        const response = await fetch(_0x3c4d, {
           method: 'GET',
           headers: {
             'Accept': 'application/json'
@@ -1056,9 +1065,8 @@ document.addEventListener('DOMContentLoaded', () => {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         data = await response.json();
-        console.log('Raw API response:', data);
+
       } else {
-        console.log('No valid Apps Script URL - using defaults');
         throw new Error('No valid configuration found');
       }
       
@@ -1095,11 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         
-        console.log('Parsed data:', { 
-          newLadderData: newLadderData.map(w => ({ word: w.word, hint: w.hint, diamondIndex: w.diamondIndex })), 
-          newFinalWord, 
-          newFinalHint 
-        });
+
         
         if (newLadderData.length > 0) {
           gameConfig.ladderData = newLadderData;
@@ -1109,13 +1113,13 @@ document.addEventListener('DOMContentLoaded', () => {
           gameConfig.finalHint = newFinalHint;
         }
         
-        console.log('Game config loaded successfully from Google Sheets');
+
       } else {
-        console.warn('No data received from Google Sheets API');
+        console.warn('No data received from API');
       }
     } catch (error) {
-      console.error('Failed to load config from Google Sheets:', error);
-      console.log('Game will not work without external config');
+      console.error('Failed to load external config:', error);
+      console.log('Using fallback data');
     }
   };
   
@@ -1476,6 +1480,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (finalHint) finalHint.style.display='none';
       if (finalLabel) finalLabel.style.display = 'none';
     }
+    
+    // Force update secret letters display
+    updateSecretLettersDisplay();
   }
 
   function buildLadder(){
@@ -2275,7 +2282,7 @@ function stopInfoDemo() {
       if (normalModeBtn) normalModeBtn.disabled = true;
       if (leaderboardBtn) leaderboardBtn.disabled = true;
       timerModeBtn.innerHTML = '<div class="loading"></div>';
-      setTimeout(() => startGame(), 300);
+      setTimeout(() => startGame(), 50);
     });
   }
   
@@ -2286,18 +2293,13 @@ function stopInfoDemo() {
       normalModeBtn.disabled = true;
       if (leaderboardBtn) leaderboardBtn.disabled = true;
       normalModeBtn.innerHTML = '<div class="loading"></div>';
-      setTimeout(() => startGame(), 300);
+      setTimeout(() => startGame(), 50);
     });
   }
 
   function startGame(){
-    if (!configLoaded) {
-      console.log('Config not loaded yet, waiting...');
-      setTimeout(() => startGame(), 10);
-      return;
-    }
-    
-    if (!ladderData || ladderData.length === 0) {
+    // Config should already be loaded since buttons are disabled until ready
+    if (!configLoaded || !ladderData || ladderData.length === 0) {
       console.error('No ladder data available - cannot start game');
       alert('Game data failed to load. Please refresh the page.');
       return;
@@ -2437,17 +2439,55 @@ function stopInfoDemo() {
   // Initialize
   createFloatingParticles();
   
-  // Load config from Google Sheets on startup
+  // Load config from Google Sheets immediately on page load
   let configLoaded = false;
+  
+  // Start loading config immediately
   window.loadGameConfig().then(() => {
     // Update variables after config load
     ladderData = gameConfig.ladderData;
     manualFinalWord = gameConfig.finalWord;
     manualFinalHint = gameConfig.finalHint;
     configLoaded = true;
-    console.log('Config updated:', { ladderData: ladderData.length, finalWord: manualFinalWord });
-    resetToStartScreen();
+    console.log('Game ready');
+    
+    // Update words to climb count
+    const wordsCount = $id('wordsToClimbCount');
+    if (wordsCount) {
+      wordsCount.textContent = ladderData.length;
+      console.log('Updated word count to:', ladderData.length);
+    }
+    
+    // Enable game buttons once config is loaded
+    hideButtonLoading(timerModeBtn);
+    hideButtonLoading(normalModeBtn);
+    if (leaderboardBtn) leaderboardBtn.disabled = false;
+  }).catch(error => {
+    console.error('Config load failed:', error);
+    // Enable buttons anyway with error state
+    hideButtonLoading(timerModeBtn);
+    hideButtonLoading(normalModeBtn);
+    if (leaderboardBtn) leaderboardBtn.disabled = false;
   });
+  
+  // Show loading state initially
+  function showButtonLoading(btn) {
+    if (!btn) return;
+    const content = btn.querySelector('.btn-content');
+    const loading = btn.querySelector('.btn-loading');
+    if (content) content.style.display = 'none';
+    if (loading) loading.style.display = 'block';
+    btn.disabled = true;
+  }
+  
+  function hideButtonLoading(btn) {
+    if (!btn) return;
+    const content = btn.querySelector('.btn-content');
+    const loading = btn.querySelector('.btn-loading');
+    if (content) content.style.display = 'block';
+    if (loading) loading.style.display = 'none';
+    btn.disabled = false;
+  }
   
   // Debug: Check if buttons are found
   console.log('Timer button found:', !!timerModeBtn);
