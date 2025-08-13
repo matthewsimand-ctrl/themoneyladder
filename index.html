@@ -2298,8 +2298,12 @@ function stopInfoDemo() {
   }
 
   function startGame(){
-    // Config should already be loaded since buttons are disabled until ready
-    if (!configLoaded || !ladderData || ladderData.length === 0) {
+    // Use current config data
+    ladderData = gameConfig.ladderData;
+    manualFinalWord = gameConfig.finalWord;
+    manualFinalHint = gameConfig.finalHint;
+    
+    if (!ladderData || ladderData.length === 0) {
       console.error('No ladder data available - cannot start game');
       alert('Game data failed to load. Please refresh the page.');
       return;
