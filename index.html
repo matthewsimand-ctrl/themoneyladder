@@ -381,11 +381,7 @@
       border-color: var(--accent);
     }
 
-.diamond-letter {
-  color: #0ea5e9 !important;
-  font-weight: 900 !important;
-  text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
-}
+
 
     .correct{
       background:linear-gradient(135deg, var(--ok-bg), #a7f3d0);
@@ -1050,8 +1046,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // Use Apps Script URL
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
         console.log('Trying Apps Script URL:', APPS_SCRIPT_URL);
-        const response = await fetch(APPS_SCRIPT_URL);
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         data = await response.json();
+        console.log('Raw API response:', data);
       } else {
         console.log('No valid Apps Script URL - using defaults');
         throw new Error('No valid configuration found');
@@ -1104,10 +1109,13 @@ document.addEventListener('DOMContentLoaded', () => {
           gameConfig.finalHint = newFinalHint;
         }
         
-        console.log('Game config loaded successfully');
+        console.log('Game config loaded successfully from Google Sheets');
+      } else {
+        console.warn('No data received from Google Sheets API');
       }
     } catch (error) {
-      console.log('Using default config - External load failed:', error);
+      console.error('Failed to load config from Google Sheets:', error);
+      console.log('Game will not work without external config');
     }
   };
   
@@ -1517,7 +1525,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (diamondIndices.includes(i)) {
           input.classList.add('green-diamond'); 
           input.dataset.diamond = 'true';
-          input.classList.add('diamond-letter');
           if (index === 0 || index === ladderData.length - 1) {
             diamondLetters[index] = diamondLetters[index] || [];
             diamondLetters[index].push(step.word[i].toUpperCase());
@@ -1590,7 +1597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input.dataset.letter==0) input.disabled=true;
         // Ensure diamond styling persists
         if (input.dataset.diamond === 'true') {
-          input.classList.add('green-diamond', 'diamond-letter');
+          input.classList.add('green-diamond');
         }
       }
     });
@@ -1692,7 +1699,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inp.classList.add('correct');
         // Preserve diamond styling
         if (inp.dataset.diamond === 'true') {
-          inp.classList.add('green-diamond', 'diamond-letter');
+          inp.classList.add('green-diamond');
         }
       }, i * 100); // Stagger the animation
     });
@@ -2287,6 +2294,12 @@ function stopInfoDemo() {
     if (!configLoaded) {
       console.log('Config not loaded yet, waiting...');
       setTimeout(() => startGame(), 10);
+      return;
+    }
+    
+    if (!ladderData || ladderData.length === 0) {
+      console.error('No ladder data available - cannot start game');
+      alert('Game data failed to load. Please refresh the page.');
       return;
     }
     
