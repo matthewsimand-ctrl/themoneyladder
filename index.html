@@ -1086,12 +1086,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const wordData = { word: row[0].toUpperCase() };
             if (row[1]) wordData.hint = row[1];
             if (row[2]) {
-              const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
-              if (indices.length > 0) wordData.diamondIndex = indices;
+              if (typeof row[2] === 'string' && row[2].includes(',')) {
+                const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
+                if (indices.length > 0) wordData.diamondIndex = indices;
+              } else if (!isNaN(parseInt(row[2]))) {
+                wordData.diamondIndex = [parseInt(row[2])];
+              }
             }
             newLadderData.push(wordData);
           }
         });
+        
+        console.log('Parsed data:', { newLadderData, newFinalWord, newFinalHint });
         
         if (newLadderData.length > 0) {
           gameConfig.ladderData = newLadderData;
