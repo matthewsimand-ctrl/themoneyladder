@@ -1028,7 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   // Option 2: Google Apps Script Web App (easier setup)
-  const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH4t4AWfdW16fjNqSGUvO5lQNKUBDPhhDOY5CZwz2haOdDkjvgDJ5FWeGg12hgC-E_/exec'
 
   // Game configuration - can be updated externally
   let gameConfig = {
@@ -1098,6 +1098,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         console.log('Parsed data:', { newLadderData, newFinalWord, newFinalHint });
+        console.log('About to update gameConfig with:', newLadderData.length, 'words');
         
         if (newLadderData.length > 0) {
           gameConfig.ladderData = newLadderData;
