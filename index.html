@@ -1030,20 +1030,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Option 2: Google Apps Script Web App (easier setup)
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyH4t4AWfdW16fjNqSGUvO5lQNKUBDPhhDOY5CZwz2haOdDkjvgDJ5FWeGg12hgC-E_/exec'
 
-  // Game configuration - can be updated externally
+  // Game configuration - loaded from Google Sheets
   let gameConfig = {
-    ladderData: [
-      { word: 'PURCHASE', diamondIndex: [0] },
-      { word: 'BUY', hint: 'synonym' },
-      { word: 'SELL', hint: 'antonym', diamondIndex: [2] },
-      { word: 'SELF', hint: 'one-letter change: YOU', diamondIndex: [1] },
-      { word: 'MADE', hint: 'chain reaction', diamondIndex: [0] },
-      { word: 'BUILT', hint: 'synonym' },
-      { word: 'QUILT', hint: 'one-letter change: like sewing', diamondIndex: [4] },
-      { word: 'PATTERN', hint: 'chain reaction', diamondIndex: [1, 5] }
-    ],
-    finalWord: 'trample',
-    finalHint: 'Hint: Watch your step!'
+    ladderData: [],
+    finalWord: '',
+    finalHint: 'Hint: A secret word awaits…'
   };
   
   // Expose function to update game config
@@ -1522,6 +1513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (diamondIndices.includes(i)) {
           input.classList.add('green-diamond'); 
           input.dataset.diamond = 'true';
+          input.classList.add('diamond-letter');
           if (index === 0 || index === ladderData.length - 1) {
             diamondLetters[index] = diamondLetters[index] || [];
             diamondLetters[index].push(step.word[i].toUpperCase());
@@ -1592,6 +1584,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input.dataset.letter==0) input.value = input.value.toUpperCase();
         else input.value='';
         if (input.dataset.letter==0) input.disabled=true;
+        // Ensure diamond styling persists
+        if (input.dataset.diamond === 'true') {
+          input.classList.add('green-diamond', 'diamond-letter');
+        }
       }
     });
     
@@ -1690,6 +1686,10 @@ document.addEventListener('DOMContentLoaded', () => {
       inp.classList.remove('incorrect'); 
       setTimeout(() => {
         inp.classList.add('correct');
+        // Preserve diamond styling
+        if (inp.dataset.diamond === 'true') {
+          inp.classList.add('green-diamond', 'diamond-letter');
+        }
       }, i * 100); // Stagger the animation
     });
     stepDiv.classList.add('row-solved');
@@ -2282,7 +2282,7 @@ function stopInfoDemo() {
   function startGame(){
     if (!configLoaded) {
       console.log('Config not loaded yet, waiting...');
-      setTimeout(() => startGame(), 50);
+      setTimeout(() => startGame(), 10);
       return;
     }
     
