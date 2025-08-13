@@ -72,6 +72,156 @@
       border:1px solid rgba(255,255,255,0.3);
     }
 
+    /* CALENDAR ICON & DROPDOWN */
+    .calendar-icon {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(37,99,235,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--accent);
+      transition: all 0.2s;
+      z-index: 20;
+    }
+
+    .calendar-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(37,99,235,0.2);
+    }
+
+    .calendar-dropdown {
+      position: absolute;
+      top: 60px;
+      right: 0;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 1rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      min-width: 280px;
+      display: none;
+      z-index: 19;
+    }
+
+    .calendar-dropdown.show {
+      display: block;
+      animation: dropdownSlide 0.2s ease-out;
+    }
+
+    @keyframes dropdownSlide {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .calendar-nav {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      color: var(--accent);
+      transition: background 0.2s;
+    }
+
+    .calendar-nav:hover {
+      background: rgba(37,99,235,0.1);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+
+    .calendar-day-header {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0.5rem 0;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      background: rgba(37,99,235,0.1);
+    }
+
+    .calendar-day.today {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+
+    .calendar-day.has-game {
+      background: rgba(37,99,235,0.2);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .calendar-day.has-game::after {
+      content: '•';
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      font-size: 0.6rem;
+      color: var(--accent);
+    }
+
+    .calendar-day.selected {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+
+    .calendar-day.other-month {
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .calendar-icon {
+        top: 1rem;
+        right: 1rem;
+        width: 44px;
+        height: 44px;
+      }
+      .calendar-dropdown {
+        right: -50px;
+        min-width: 260px;
+      }
+    }
+
     .hero::before{
       content:'';
       position:absolute;
@@ -463,6 +613,45 @@
       text-align: center;
       white-space: nowrap;
       font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .arrow-hint:hover {
+      color: var(--accent);
+      transform: scale(1.05);
+    }
+    
+    .hint-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      margin-bottom: 5px;
+    }
+    
+    .hint-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(0,0,0,0.9);
+    }
+    
+    .arrow-hint:hover .hint-tooltip {
+      opacity: 1;
     }
 
     .down-arrow svg{
@@ -847,6 +1036,23 @@
   <div class="app">
     <!-- ENHANCED START SCREEN -->
     <section id="hero" class="hero">
+      <div class="calendar-icon" id="calendar-icon">📅</div>
+      <div class="calendar-dropdown" id="calendar-dropdown">
+        <div class="calendar-header">
+          <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+          <span id="calendar-month-year"></span>
+          <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar-grid" id="calendar-grid">
+          <div class="calendar-day-header">S</div>
+          <div class="calendar-day-header">M</div>
+          <div class="calendar-day-header">T</div>
+          <div class="calendar-day-header">W</div>
+          <div class="calendar-day-header">T</div>
+          <div class="calendar-day-header">F</div>
+          <div class="calendar-day-header">S</div>
+        </div>
+      </div>
       <div class="hero-inner">
         <h1>💎 The Money Ladder 🪜</h1>
         <div class="subtitle">💎 Climb • Collect • Conquer 💎</div>
@@ -911,7 +1117,7 @@
         <label id="finalLabel" for="finalInput" style="font-size:1rem;font-weight:600;margin-bottom:1rem;display:none">Guess the secret word:</label>
         <div id="finalHint" style="color:var(--muted);margin-bottom:1rem;display:none;font-style:italic;font-size:1rem"></div>
         <input id="finalInput" type="text" placeholder="Enter secret word" disabled style="margin-bottom:1rem" />
-        <button id="finalSubmit" disabled class="btn primary" type="button" style="width:100%;margin-bottom:1rem">Submit</button>
+        <button id="finalSubmit" disabled class="btn primary" type="button" style="width:100%;margin-bottom:1rem" onclick="console.log('Button clicked via onclick'); submitFinalWord();">Submit</button>
         <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center">
           <button id="shuffleBtn" disabled class="btn minor" type="button">🔄 Shuffle</button>
           <button id="shareBtn" disabled class="btn secondary" type="button">📤 Share</button>
@@ -1020,7 +1226,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $id = id => document.getElementById(id);
   
-  const _0x1a2b = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4b2dOUTZXYm9sV0lua1VTa1dyMmYwM01IM3VFUC00dVhnUlVJQWpTWjN6WUZsVGJlLTNFUkNOTDFtU2VBbm8ydkYvZXhlYw==';
+  const _0x1a2b = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6QTY3QWVkMDUyZDh1UHYzeENpaWJOclRkTzAtTldrd0I4MFJpMThuRVZuY3BTRS1hUGlZQkpUeE5hZ0tJLVNuMGcvZXhlYw==';
   const _0x3c4d = atob(_0x1a2b);
 
   // Game configuration - loaded from Google Sheets
@@ -1145,6 +1351,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let gameStartAt = null;
   let currentStep = 0;
   let isSubmitting = false;
+  let revealedLetters = {}; // Track revealed letters per word index
 
   // popup auto-close handle
   let popupAutoCloseTimeout = null;
@@ -1298,6 +1505,27 @@ document.addEventListener('DOMContentLoaded', () => {
     display.style.fontWeight = '900';
   }
   function scramble(str){ const arr = str.split(''); for (let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr.join(''); }
+  
+  function getHintExplanation(hint) {
+    const explanations = {
+      'rhyme': 'Words that sound similar at the end',
+      'synonym': 'Words with the same or similar meaning',
+      'antonym': 'Words with opposite meanings',
+      'wordplay': 'The previous word usually comes before this word in a common phrase',
+      'one-letter change': 'Change exactly one letter to get the next word',
+      'consisting of': 'The previous word is made from parts of this word',
+      'homonym': 'Words that sound the same but have different meanings',
+    };
+    
+    // Find matching explanation
+    for (const [key, explanation] of Object.entries(explanations)) {
+      if (hint.toLowerCase().includes(key)) {
+        return explanation;
+      }
+    }
+    
+    return 'How this word connects to the next one';
+  }
 
   /* Enhanced Leaderboard with better storage */
   const LB_KEY = 'wordLadderLeaderboard_v1';
@@ -1448,8 +1676,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function resetGameState(){
     stopClock();
     isSubmitting = false;
-    timeLeft=90; incorrectWordGuesses=0; diamondLetters=[]; secretWord=''; currentStep=0;
-    if (finalInput) { finalInput.value=''; finalInput.disabled=true; finalInput.style.backgroundColor=''; }
+    timeLeft=90; incorrectWordGuesses=0; diamondLetters=[]; secretWord=''; currentStep=0; revealedLetters={};
+    if (finalInput) { 
+      finalInput.value=''; 
+      finalInput.disabled=true; 
+      finalInput.removeAttribute('style'); // Remove all inline styles completely
+    }
     if (finalSubmit) finalSubmit.disabled=true;
     if (shuffleBtn) shuffleBtn.disabled=true;
     if (shareBtn) shareBtn.disabled = true;
@@ -1562,6 +1794,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const hintEl = document.createElement('div');
           hintEl.className = 'arrow-hint';
           hintEl.textContent = nextStep.hint;
+          
+          // Add tooltip with explanation
+          const tooltip = document.createElement('div');
+          tooltip.className = 'hint-tooltip';
+          tooltip.textContent = getHintExplanation(nextStep.hint);
+          hintEl.appendChild(tooltip);
+          
           arrowEl.appendChild(hintEl);
         }
         
@@ -1751,6 +1990,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const guess = inputs.map(inp => (inp.value||'').toUpperCase()).join('');
   const correctWord = ladderData[index].word.toUpperCase();
   
+  console.log('submitWordGuess called for ladder word', index, 'guess:', guess, 'correct:', correctWord);
+  
   if (guess === correctWord) {
     markRowCorrect(index);
     collectDiamondsFromInputs(index);
@@ -1767,6 +2008,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 800);
     }
   } else {
+    console.log('Wrong ladder word guess - this does NOT trigger letter reveal');
     incorrectWordGuesses++;
     const remaining = maxIncorrectGuesses - incorrectWordGuesses;
     if (wrongGuessesCounter) {
@@ -1786,6 +2028,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     markRowIncorrect(index);
+    
+    // Reveal next letter hint for ladder words in precision mode
+    if (currentMode === 'normal' && remaining > 0) {
+      setTimeout(() => {
+        const correctWord = ladderData[index].word.toUpperCase();
+        const inputs = stepDiv.inputs || [];
+        
+        // Clear all incorrect letters after the first letter
+        for (let i = 1; i < inputs.length; i++) {
+          if (inputs[i].value && inputs[i].value.toUpperCase() !== correctWord[i]) {
+            inputs[i].value = '';
+            console.log('Cleared incorrect letter at position', i);
+          }
+        }
+        
+        // Initialize revealed count for this word if not exists
+        if (!revealedLetters[index]) revealedLetters[index] = 0;
+        
+        // Reveal the next letter in sequence (starting from position 1)
+        const positionToReveal = 1 + revealedLetters[index];
+        if (positionToReveal < inputs.length) {
+          inputs[positionToReveal].value = correctWord[positionToReveal];
+          inputs[positionToReveal].style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+          inputs[positionToReveal].style.borderColor = '#d97706';
+          inputs[positionToReveal].style.color = '#92400e';
+          revealedLetters[index]++;
+          console.log('Revealed letter at position', positionToReveal, ':', correctWord[positionToReveal]);
+        }
+        
+        // Focus on next empty input after the revealed letter
+        for (let i = positionToReveal + 1; i < inputs.length; i++) {
+          if (!inputs[i].value && !inputs[i].disabled) {
+            inputs[i].focus();
+            console.log('Focused on position', i);
+            break;
+          }
+        }
+      }, 600); // Wait for shake animation to complete
+    }
+    
     if (currentMode === 'normal' && incorrectWordGuesses >= maxIncorrectGuesses) {
       endGame(false, '💥 Too many wrong guesses! The ladder crumbles beneath you...');
     }
@@ -1800,8 +2082,18 @@ document.addEventListener('DOMContentLoaded', () => {
     currentStep = ladderData.length;
     updateProgress();
     
-    if (finalInput) finalInput.disabled=false;
-    if (finalSubmit) finalSubmit.disabled=false;
+    console.log('enableFinalInput called');
+    console.log('finalInput element:', finalInput);
+    console.log('finalSubmit element:', finalSubmit);
+    
+    if (finalInput) {
+      finalInput.disabled=false;
+      console.log('Final input enabled');
+    }
+    if (finalSubmit) {
+      finalSubmit.disabled=false;
+      console.log('Final submit enabled');
+    }
     if (shareBtn) shareBtn.disabled = true;
     if (finalHint) finalHint.textContent = manualFinalWord ? (manualFinalHint || 'Hint: A secret word awaits…') : 'Use the highlighted letters to solve the final word';
     if (finalHint) finalHint.style.display='block';
@@ -1841,10 +2133,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const guess = finalInput.value.trim().toUpperCase();
     if (!guess) return;
     
+    console.log('submitFinalWord called with guess:', guess);
+    console.log('secretWord:', secretWord);
+    console.log('currentMode:', currentMode);
+    
     // Prevent any scrolling/navigation
     event?.preventDefault?.();
     
     if (guess === (secretWord||'').toUpperCase()) {
+      console.log('Correct guess!');
       if (finalInput) {
         finalInput.style.background = 'linear-gradient(135deg, var(--ok-bg), #a7f3d0)';
         finalInput.style.borderColor = 'var(--ok)';
@@ -1867,24 +2164,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 300);
       
     } else {
+      console.log('Wrong guess!');
       if (finalInput) {
         finalInput.style.background = 'linear-gradient(135deg, var(--bad-bg), #fecaca)';
         finalInput.style.borderColor = 'var(--bad)';
         finalInput.style.animation = 'incorrectShake 0.5s ease-out';
-        
-        // Reset styling after animation
-        setTimeout(() => {
-          finalInput.style.background = '';
-          finalInput.style.borderColor = '';
-          finalInput.style.animation = '';
-          finalInput.value = ''; // Clear incorrect guess
-          finalInput.focus(); // Return focus to input
-        }, 500);
       }
+      
+      // Clear input and reset styling after animation
+      setTimeout(() => {
+        if (finalInput) {
+          finalInput.value = ''; // Clear incorrect guess
+          finalInput.removeAttribute('style'); // Remove all inline styles
+          finalInput.focus(); // Return focus to input
+        }
+      }, 500);
       
       if (currentMode === 'normal') {
         incorrectWordGuesses++;
         const remaining = maxIncorrectGuesses - incorrectWordGuesses;
+        console.log('Incorrect guesses:', incorrectWordGuesses, 'Remaining:', remaining);
+        
         if (wrongGuessesCounter) {
           wrongGuessesCounter.textContent = `Incorrect Guesses Remaining: ${remaining}`;
           wrongGuessesCounter.style.color = 'var(--bad)';
@@ -1902,6 +2202,34 @@ document.addEventListener('DOMContentLoaded', () => {
             wrongGuessesCounter.classList.remove('pulse');
           }
         }
+        
+        // Give next letter hint if not at 0 remaining
+        if (remaining > 0 && secretWord) {
+          console.log('Revealing next letter...');
+          const display = $id('secretLettersText');
+          if (display) {
+            const targetWord = secretWord.toUpperCase();
+            const currentLetters = display.textContent.split(' ');
+            console.log('Target word:', targetWord);
+            console.log('Current letters:', currentLetters);
+            
+            // Find first underscore or wrong letter and reveal correct one
+            for (let i = 0; i < targetWord.length; i++) {
+              if (currentLetters[i] === '_' || currentLetters[i] !== targetWord[i]) {
+                currentLetters[i] = targetWord[i];
+                display.textContent = currentLetters.join(' ');
+                console.log('Revealed letter at position', i, ':', targetWord[i]);
+                console.log('Updated display:', display.textContent);
+                break;
+              }
+            }
+          } else {
+            console.log('Display element not found');
+          }
+        } else {
+          console.log('Not revealing letter - remaining:', remaining, 'secretWord:', secretWord);
+        }
+        
         if (remaining <= 0) { 
           if (finalInput) finalInput.disabled = true;
           if (finalSubmit) finalSubmit.disabled = true;
@@ -2376,6 +2704,13 @@ function stopInfoDemo() {
     incorrectWordGuesses = 0;
     currentStep = 0;
 
+    // Reset final input completely
+    if (finalInput) {
+      finalInput.value = '';
+      finalInput.removeAttribute('style');
+      finalInput.className = '';
+    }
+
     // Re-enable all main buttons
     if (timerModeBtn) {
       timerModeBtn.disabled = false;
@@ -2383,7 +2718,7 @@ function stopInfoDemo() {
     }
     if (normalModeBtn) {
       normalModeBtn.disabled = false;
-      normalModeBtn.innerHTML = '🎯 Precision Mode<small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">Take your time, but watch your guesses</small>';
+      normalModeBtn.innerHTML = '🎯 Precision Mode<small style="display:block;font-size:0.9rem;opacity:0.8;margin-top:0.3rem">Take your time, but you only get 3 wrong guesses</small>';
     }
     if (leaderboardBtn) leaderboardBtn.disabled = false;
     if (infoButton) infoButton.disabled = false;
@@ -2436,7 +2771,13 @@ function stopInfoDemo() {
       }
     });
   }
-  if (finalSubmit) finalSubmit.addEventListener('click', submitFinalWord);
+  if (finalSubmit) {
+    console.log('Final submit button found, adding event listener');
+    finalSubmit.addEventListener('click', (e) => {
+      console.log('Final submit button clicked!');
+      submitFinalWord();
+    });
+  }
   if (finalInput) finalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitFinalWord(); });
   if (shuffleBtn) {
     shuffleBtn.addEventListener('click', () => {
@@ -2447,8 +2788,207 @@ function stopInfoDemo() {
     });
   }
 
+  // Calendar state
+  let currentCalendarDate = new Date();
+  let availableGameDates = new Set();
+  let selectedGameDate = null;
+  
+  // Load previous games from Google Sheets
+  async function loadPreviousGames() {
+    try {
+      const response = await fetch(_0x3c4d, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      const dates = new Set();
+      
+      if (data.availableDates) {
+        data.availableDates.forEach(dateStr => dates.add(dateStr));
+      }
+      
+      availableGameDates = dates;
+      renderCalendar();
+      return dates;
+    } catch (error) {
+      console.error('Failed to load previous games:', error);
+      return new Set();
+    }
+  }
+  
+  // Calendar functions
+  function renderCalendar() {
+    const monthYear = $id('calendar-month-year');
+    const grid = $id('calendar-grid');
+    if (!monthYear || !grid) return;
+    
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    const today = new Date();
+    
+    monthYear.textContent = new Intl.DateTimeFormat('en-US', { 
+      month: 'long', 
+      year: 'numeric' 
+    }).format(currentCalendarDate);
+    
+    // Clear existing days
+    const existingDays = grid.querySelectorAll('.calendar-day');
+    existingDays.forEach(day => day.remove());
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    // Add previous month's trailing days
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const day = document.createElement('div');
+      day.className = 'calendar-day other-month';
+      day.textContent = daysInPrevMonth - i;
+      grid.appendChild(day);
+    }
+    
+    // Add current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'calendar-day';
+      dayEl.textContent = day;
+      
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      
+      // Check if this date has a game
+      if (availableGameDates.has(dateStr)) {
+        dayEl.classList.add('has-game');
+        dayEl.addEventListener('click', () => selectGameDate(dateStr));
+      }
+      
+      // Mark today
+      if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+        dayEl.classList.add('today');
+      }
+      
+      // Mark selected date
+      if (selectedGameDate === dateStr) {
+        dayEl.classList.add('selected');
+      }
+      
+      grid.appendChild(dayEl);
+    }
+    
+    // Add next month's leading days
+    const totalCells = grid.children.length - 7; // Subtract header row
+    const remainingCells = 42 - totalCells; // 6 rows * 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'calendar-day other-month';
+      dayEl.textContent = day;
+      grid.appendChild(dayEl);
+    }
+  }
+  
+  function selectGameDate(dateStr) {
+    selectedGameDate = dateStr;
+    renderCalendar();
+    
+    showButtonLoading(timerModeBtn);
+    showButtonLoading(normalModeBtn);
+    
+    fetch(_0x3c4d + '?date=' + dateStr)
+      .then(response => response.json())
+      .then(data => {
+        if (data.values && data.values.length > 1) {
+          const rows = data.values.slice(1);
+          const newLadderData = [];
+          let newFinalWord = '';
+          let newFinalHint = '';
+          
+          rows.forEach(row => {
+            if (row[0] === 'FINAL') {
+              newFinalWord = row[1] || '';
+              newFinalHint = row[2] || 'Hint: A secret word awaits…';
+            } else if (row[0] && row[0] !== 'FINAL') {
+              const wordData = { word: row[0].toUpperCase() };
+              if (row[1]) wordData.hint = row[1];
+              if (row[2] !== '' && row[2] !== null && row[2] !== undefined) {
+                if (typeof row[2] === 'number') {
+                  wordData.diamondIndex = [row[2]];
+                } else {
+                  const cellValue = String(row[2]).trim();
+                  if (cellValue && cellValue !== '') {
+                    if (cellValue.includes(',')) {
+                      const indices = cellValue.split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
+                      if (indices.length > 0) wordData.diamondIndex = indices;
+                    } else {
+                      const index = parseInt(cellValue);
+                      if (!isNaN(index)) wordData.diamondIndex = [index];
+                    }
+                  }
+                }
+              }
+              newLadderData.push(wordData);
+            }
+          });
+          
+          gameConfig.ladderData = newLadderData;
+          gameConfig.finalWord = newFinalWord;
+          gameConfig.finalHint = newFinalHint;
+          
+          ladderData = newLadderData;
+          manualFinalWord = newFinalWord;
+          manualFinalHint = newFinalHint;
+          
+          const wordsCount = $id('wordsToClimbCount');
+          if (wordsCount) wordsCount.textContent = ladderData.length;
+        }
+        
+        hideButtonLoading(timerModeBtn);
+        hideButtonLoading(normalModeBtn);
+      })
+      .catch(error => {
+        console.error('Failed to load game for date:', dateStr, error);
+        hideButtonLoading(timerModeBtn);
+        hideButtonLoading(normalModeBtn);
+      });
+  }
+  
+  window.changeMonth = function(direction) {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+    renderCalendar();
+  };
+  
+  // Calendar dropdown toggle
+  const calendarIcon = $id('calendar-icon');
+  const calendarDropdown = $id('calendar-dropdown');
+  
+  if (calendarIcon && calendarDropdown) {
+    calendarIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      calendarDropdown.classList.toggle('show');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!calendarDropdown.contains(e.target) && !calendarIcon.contains(e.target)) {
+        calendarDropdown.classList.remove('show');
+      }
+    });
+  }
+  
   // Initialize
   createFloatingParticles();
+  renderCalendar();
+  
+  // Load available game dates from Google Sheets
+  loadPreviousGames().catch(error => {
+    console.error('Failed to load previous games for calendar:', error);
+  });
   
   // Load config from Google Sheets immediately on page load
   let configLoaded = false;
