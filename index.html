@@ -2442,6 +2442,11 @@ function stopInfoDemo() {
   // Load config from Google Sheets immediately on page load
   let configLoaded = false;
   
+  // Show loading state initially
+  showButtonLoading(timerModeBtn);
+  showButtonLoading(normalModeBtn);
+  if (leaderboardBtn) leaderboardBtn.disabled = true;
+  
   // Start loading config immediately
   window.loadGameConfig().then(() => {
     // Update variables after config load
@@ -2453,10 +2458,7 @@ function stopInfoDemo() {
     
     // Update words to climb count
     const wordsCount = $id('wordsToClimbCount');
-    if (wordsCount) {
-      wordsCount.textContent = ladderData.length;
-      console.log('Updated word count to:', ladderData.length);
-    }
+    if (wordsCount) wordsCount.textContent = ladderData.length;
     
     // Enable game buttons once config is loaded
     hideButtonLoading(timerModeBtn);
