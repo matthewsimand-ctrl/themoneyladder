@@ -1023,24 +1023,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const _0x1a2b = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5SDR0NEFXZmRXMTZmalNHVXZPNWxRTktCRFBoRE9ZNUNad3oyaGFPZERranZnREo1RldlR2cxMmhnQy1FXy9leGVj';
   const _0x3c4d = atob(_0x1a2b);
 
-  // Game configuration - loaded from Google Sheets with fallback
+  // Game configuration - loaded from Google Sheets
   let gameConfig = {
-    ladderData: [
-      { word: 'MONEY', diamondIndex: [0] },
-      { word: 'HONEY', hint: 'rhyme', diamondIndex: [3] },
-      { word: 'BEAR', hint: 'animal that loves the word above' },
-      { word: 'BEER', hint: 'one-letter change: cheers!', diamondIndex: [0] },
-      { word: 'BELLY', hint: 'chain reaction' },
-      { word: 'DANCE', hint: 'chain reaction', diamondIndex: [0] },
-      { word: 'PARTY', hint: 'chain reaction' },
-      { word: 'POOPER', hint: 'chain reaction', diamondIndex: [1] },
-      { word: 'PROPER', hint: 'one-letter change: in good form', diamondIndex: [2] },
-      { word: 'PROPEL', hint: 'one-letter change: push' },
-      { word: 'ROPE', hint: 'consisting of: climber\'s aid' },
-      { word: 'BURN', hint: 'chain reaction', diamondIndex: [2] }
-    ],
-    finalWord: 'BEDROOM',
-    finalHint: 'Hint: The perfect place for rest!'
+    ladderData: [],
+    finalWord: '',
+    finalHint: ''
   };
   
   // Expose function to update game config
@@ -1053,10 +1040,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       let data;
       
-      // Use Apps Script URL
+      // Use Apps Script URL with CORS handling
       if (_0x3c4d) {
-        const response = await fetch(_0x3c4d, {
+        const response = await fetch(_0x3c4d + '?callback=?', {
           method: 'GET',
+          mode: 'cors',
           headers: {
             'Accept': 'application/json'
           }
@@ -1120,13 +1108,32 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Failed to load external config:', error);
       console.log('Using fallback data');
+      // Only use fallback if no data was loaded
+      if (!gameConfig.ladderData || gameConfig.ladderData.length === 0) {
+        gameConfig.ladderData = [
+          { word: 'MONEY', diamondIndex: [0] },
+          { word: 'HONEY', hint: 'rhyme', diamondIndex: [3] },
+          { word: 'BEAR', hint: 'animal that loves the word above' },
+          { word: 'BEER', hint: 'one-letter change: cheers!', diamondIndex: [0] },
+          { word: 'BELLY', hint: 'chain reaction' },
+          { word: 'DANCE', hint: 'chain reaction', diamondIndex: [0] },
+          { word: 'PARTY', hint: 'chain reaction' },
+          { word: 'POOPER', hint: 'chain reaction', diamondIndex: [1] },
+          { word: 'PROPER', hint: 'one-letter change: in good form', diamondIndex: [2] },
+          { word: 'PROPEL', hint: 'one-letter change: push' },
+          { word: 'ROPE', hint: 'consisting of: climber\'s aid' },
+          { word: 'BURN', hint: 'chain reaction', diamondIndex: [2] }
+        ];
+        gameConfig.finalWord = 'BEDROOM';
+        gameConfig.finalHint = 'Hint: The perfect place for rest!';
+      }
     }
   };
   
   // Use config values - will be updated after loading
-  let ladderData = gameConfig.ladderData;
-  let manualFinalWord = gameConfig.finalWord;
-  let manualFinalHint = gameConfig.finalHint;
+  let ladderData = [];
+  let manualFinalWord = '';
+  let manualFinalHint = '';
 
   let clockInterval = null;
   let timeLeft = 90;
