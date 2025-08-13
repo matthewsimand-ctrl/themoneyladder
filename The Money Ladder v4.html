@@ -1020,6 +1020,14 @@
 document.addEventListener('DOMContentLoaded', () => {
   const $id = id => document.getElementById(id);
 
+  // GOOGLE SHEETS CONFIGURATION
+  // Replace these with your actual Google Sheets details:
+  const GOOGLE_SHEETS_CONFIG = {
+    SHEET_ID: 'YOUR_GOOGLE_SHEET_ID', // Found in your Google Sheets URL
+    API_KEY: 'YOUR_GOOGLE_SHEETS_API_KEY', // From Google Cloud Console
+    RANGE: 'GameData!A:F' // Sheet name and range (adjust as needed)
+  };
+
   // Game configuration - can be updated externally
   let gameConfig = {
     ladderData: [
@@ -1041,15 +1049,49 @@ document.addEventListener('DOMContentLoaded', () => {
     gameConfig = { ...gameConfig, ...newConfig };
   };
   
-  // Load config from external source (Wix Data, API, etc.)
+  // Load config from Google Sheets
   window.loadGameConfig = async function() {
     try {
-      // Replace this URL with your Wix Data endpoint
-      const response = await fetch('/api/game-config');
+      const { SHEET_ID, API_KEY, RANGE } = GOOGLE_SHEETS_CONFIG;
+      
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+      const response = await fetch(url);
       const data = await response.json();
-      gameConfig = { ...gameConfig, ...data };
+      
+      if (data.values && data.values.length > 1) {
+        const rows = data.values.slice(1); // Skip header row
+        const newLadderData = [];
+        let newFinalWord = '';
+        let newFinalHint = '';
+        
+        rows.forEach(row => {
+          if (row[0] === 'FINAL') {
+            newFinalWord = row[1] || '';
+            newFinalHint = row[2] || 'Hint: A secret word awaits…';
+          } else if (row[0] && row[0] !== 'FINAL') {
+            const wordData = { word: row[0].toUpperCase() };
+            if (row[1]) wordData.hint = row[1];
+            if (row[2]) {
+              // Parse diamond indices (comma-separated numbers)
+              const indices = row[2].split(',').map(i => parseInt(i.trim())).filter(i => !isNaN(i));
+              if (indices.length > 0) wordData.diamondIndex = indices;
+            }
+            newLadderData.push(wordData);
+          }
+        });
+        
+        if (newLadderData.length > 0) {
+          gameConfig.ladderData = newLadderData;
+        }
+        if (newFinalWord) {
+          gameConfig.finalWord = newFinalWord;
+          gameConfig.finalHint = newFinalHint;
+        }
+        
+        console.log('Game config loaded from Google Sheets');
+      }
     } catch (error) {
-      console.log('Using default config');
+      console.log('Using default config - Google Sheets load failed:', error);
     }
   };
   
@@ -2350,7 +2392,15 @@ function stopInfoDemo() {
 
   // Initialize
   createFloatingParticles();
-  resetToStartScreen();
+  
+  // Load config from Google Sheets on startup
+  window.loadGameConfig().then(() => {
+    // Update variables after config load
+    const ladderData = gameConfig.ladderData;
+    const manualFinalWord = gameConfig.finalWord;
+    const manualFinalHint = gameConfig.finalHint;
+    resetToStartScreen();
+  });
   
   // Debug: Check if buttons are found
   console.log('Timer button found:', !!timerModeBtn);
